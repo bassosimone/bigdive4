@@ -1,0 +1,78 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        <script src="d3.min.js" charset="utf-8"></script>
+    </head><body>
+        <svg></svg>
+        <script>
+// Use olympic dataset, use nest to group by sports, draw a list of
+// rectangles inside each rectangle representing an athlete
+(function () {
+    d3.csv("athletes.csv", function (data) {
+
+        var nested = d3.nest()
+                .key(function (d) { return d.sport; })
+                .entries(data),
+
+            athleteWidth = 1,
+            athleteStartEvery = 2 * athleteWidth,
+            rowHeight = 20,
+            height = rowHeight * nested.length,
+            topPadding = 20,
+            leftPadding = 120,
+            maxNumAthletes = d3.max(nested, function (d) {
+                return d.values.length;
+            }),
+            width = leftPadding + maxNumAthletes * athleteStartEvery + 10;
+
+            scaleY = d3.scale.linear()
+                .domain([0, nested.length])
+                .range([topPadding, height - topPadding]),
+
+            scaleX = function (value) {
+                return value * athleteStartEvery;
+            },
+
+            svg = d3.select("svg")
+                .attr("width", width)
+                .attr("height", height),
+
+            groups = svg.selectAll("g")
+                .data(nested)
+                .enter()
+                .append("g"),
+
+            subGroups = groups.selectAll("g")
+                .data(function (d, i) {
+                    return d.values.map(function () {
+                        return i;
+                    });
+                })
+                .enter()
+                .append("g");
+
+        groups.append("text")
+            .text(function (d) { return d.key; })
+            .attr("y", function (_, i) { return scaleY(i); });
+
+        groups.append("rect")
+            .attr("x", leftPadding)
+            .attr("y", function (_, i) { return scaleY(i) - 10; })
+            .attr("width", function (d) { return scaleX(d.values.length); })
+            .attr("height", 10)
+            .style("stroke-width", "0.5")
+            .style("fill", "none")
+            .style("stroke", "black");
+
+        subGroups.append("rect")
+            .attr("x", function (_, i) {
+                return leftPadding + athleteStartEvery * i;
+            })
+            .attr("y", function (d) { return scaleY(d) - 7.5; })
+            .attr("width", athleteWidth)
+            .attr("height", 5);
+    });
+})();
+        </script>
+    </body>
+</html>
