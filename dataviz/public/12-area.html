@@ -1,0 +1,52 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        <script src="d3.min.js" charset="utf-8"></script>
+    </head><body>
+        <svg></svg>
+        <script>
+// Area under the number of gold medals
+(function () {
+    d3.csv("athletes.csv", function (data) {
+        var width = 800,
+            height = 300,
+            nested = d3.nest()
+                .key(function (d) { return d.country; })
+                .rollup(function (leaves) {
+                    return d3.sum(leaves, function (d) {
+                        return +d.gold_medals;
+                    });
+                })
+                .entries(data),
+            scaleX = d3.scale.linear()
+                .domain([0, nested.length])
+                .range([0, width]),
+            maxGoldMedals = d3.max(nested, function (d) {
+                return +d.values;
+            }),
+            scaleY = d3.scale.linear()
+                .domain([maxGoldMedals, 0])
+                .range([0, height]);
+        d3.select("svg")
+            .attr("width", width)
+            .attr("height", height)
+            .append("path")
+            .attr("d", function () {
+                return d3.svg.area()
+                    .x(function (_, i) {
+                        return scaleX(i);
+                    })
+                    .y0(function (d) {
+                        return scaleY(0);
+                    })
+                    .y1(function (d) {
+                        return scaleY(d.values);
+                    })(nested);
+            })
+            .style("fill", "purple")
+            .style("stroke", "purple");
+    });
+})();
+        </script>
+    </body>
+</html>
