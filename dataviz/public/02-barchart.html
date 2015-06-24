@@ -1,0 +1,57 @@
+<html>
+    <head>
+        <script src="d3.min.js" charset="utf-8"></script>
+    </head><body>
+        <svg></svg>
+        <script>
+// Create a barchart also embedding the text into the barchar
+(function () {
+    var width = 800,
+        height = 400,
+        numData = 16,
+        data = (function () {
+            var data = [],
+                maxData = (Math.random() * numData) | 0;
+            for (var i = 0; i < maxData; i += 1) {
+                data.push((Math.random() * numData) | 0);
+            }
+            return data;
+        })(),
+        dataSum = d3.sum(data),
+        dataLength = data.length,
+        maxData = d3.max(data),
+        rectWidth = width / dataLength,
+        spaceForText = 30,
+        rectHeight = d3.scale.linear()
+            .domain([0, maxData])
+            .range([0, height - spaceForText]),
+        groups = d3.select("svg")
+            .attr("width", width)
+            .attr("height", height)
+            .selectAll("g")
+            .data(data)
+            .enter()
+            .append("g")
+            .attr("transform", function (_, i) {
+                return "translate(" + (i * rectWidth) + ", 0)";
+            });
+
+    groups.append("text")
+        .text(function (d) {
+            return d;
+        })
+        .attr("transform", "translate(" + (rectWidth / 2) + ", "
+                + height + ") rotate(320)");
+
+    groups.append("rect")
+        .attr("width", rectWidth / 4)
+        .attr("height", function (d) { return rectHeight(d); })
+        .attr("x", rectWidth / 2.5)
+        .attr("y", function (d) {
+            return height - rectHeight(d) - spaceForText;
+        })
+        .attr("opacity", 0.5);
+})();
+        </script>
+    </body>
+</html>
