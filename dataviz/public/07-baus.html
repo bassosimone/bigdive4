@@ -1,0 +1,139 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        <script src="d3.min.js" charset="utf-8"></script>
+        <style>
+body {
+    margin: 0px;
+}
+.h, .v {
+    stroke: black;
+    stroke-dasharray: 4 4;
+    stroke-width: 1;
+    stroke-opacity: 0.5;
+}
+.axis path, .axis line {
+    fill: none;
+    stroke: black;
+    shape-rendering: crispEdges;
+}
+.axis text {
+    font-family: sans-serif;
+    font-size: 11px;
+}
+        </style>
+    </head><body>
+        <svg></svg>
+        <script>
+// Deeply based on http://www.jeromecukier.net/blog/2012/05/28/manipulating-data-like-a-boss-with-d3/
+(function () {
+    d3.csv("07-data.csv", function (data) {
+        var w = 700,
+            h = 400,
+            m = 40,
+
+            svg = d3.select("svg")
+                .attr("width", w)
+                .attr("height", h),
+
+            xScale = d3.scale.linear()
+                .domain([0, 5])
+                .range([m, w - m]),
+
+            yScale = d3.scale.linear()
+                .domain([-10, 10])
+                .range([h - m, m]),
+
+            rScale = d3.scale.linear()
+                .domain([0, 500])
+                .range([0, 20]),
+
+            oScale = d3.scale.linear()
+                .domain([10000, 100000])
+                .range([0.5, 1]),
+
+            cScale = d3.scale.category10()
+                .domain([
+                    "Africa",
+                    "America",
+                    "Asia",
+                    "Europe",
+                    "Oceania"
+                ]),
+
+            xAxis = d3.svg.axis()
+                .scale(xScale)
+                .orient("bottom"),
+
+            yAxis = d3.svg.axis()
+                .scale(yScale)
+                .orient("left");
+
+        svg.append("g")
+            .attr("class", "axis")
+            .attr("transform", "translate(0, " + (h - m) + ")")
+            .call(xAxis);
+
+        svg.append("g")
+            .attr("class", "axis")
+            .attr("transform", "translate(" + m + ", 0)")
+            .call(yAxis);
+
+        svg.selectAll(".h")
+            .data(d3.range(-8, 12, 2))
+            .enter()
+            .append("line")
+            .classed("h", 1)
+            .attr("x1", m)
+            .attr("x2", w - m)
+            .attr("y1", yScale)
+            .attr("y2", yScale);
+
+        svg.selectAll(".v")
+            .data(d3.range(0.5, 5.5, 0.5))
+            .enter()
+            .append("line")
+            .classed("v", 1)
+            .attr("y1", m)
+            .attr("y2", h - m)
+            .attr("x1", xScale)
+            .attr("x2", xScale);
+
+        data.sort(function (a, b) {
+            return b.population - a.population;
+        });
+
+        svg.selectAll("circle")
+            .data(data)
+            .enter()
+            .append("circle")
+            .attr("cx", function (d) { return xScale(+d.GERD); })
+            .attr("cy", function (d) { return yScale(+d.growth); })
+            .attr("r", function (d) {
+                return rScale(Math.sqrt(+d.population));
+            })
+            .style("fill", function (d) { return cScale(d.continent); })
+            .style("opacity", function (d) { return oScale(+d.GDPcap); })
+            .append("title")
+            .text(function (d) { return d.country; });
+
+        svg.append("text")
+            .attr("class", "axis")
+            .attr("text-anchor", "middle")
+            .attr("x", w / 2)
+            .attr("y", h - 4)
+            .text("Gross domestic expenditure in R&D");
+
+        svg.append("text")
+            .attr("class", "axis")
+            .attr("text-anchor", "middle")
+            .attr("x", - h / 2)
+            .attr("y", 15)
+            .text("Growth")
+            .attr("transform", "rotate (270)");
+
+    });
+})();
+        </script>
+    </body>
+</html>
