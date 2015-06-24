@@ -1,0 +1,110 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        <script src="d3.min.js" charset="utf-8"></script>
+    </head><body>
+        <svg></svg>
+        <script>
+// Draw number of medals per country and interactivelly allow
+// one to magnify / hide the result of a country
+(function () {
+    d3.csv("athletes.csv", function (data) {
+        var width = 1000,
+
+            nested = d3.nest()
+                .key(function (d) { return d.country; })
+                .rollup(function (leaves) {
+                    return leaves.reduce(function (state, d) {
+                        state.bronze += +d.bronze_medals;
+                        state.gold += +d.gold_medals;
+                        state.silver += +d.silver_medals;
+                        return state;
+                    }, {
+                        bronze: 0,
+                        gold: 0,
+                        silver: 0
+                    });
+                })
+                .entries(data),
+
+            leftPadding = 150,
+
+            scaleX = d3.scale.ordinal()
+                .domain(["gold", "silver", "bronze"])
+                .rangePoints([leftPadding, width - leftPadding]),
+
+            rowHeight = 30,
+            numRows = nested.length,
+            height = numRows * rowHeight,
+            paddingTop = 150,
+
+            scaleY = d3.scale.linear()
+                .domain([0, nested.length])
+                .range([paddingTop, height - paddingTop]),
+
+            groups = d3.select("svg")
+                .attr("height", height)
+                .attr("width", width)
+                .selectAll("g")
+                .data(nested)
+                .enter()
+                .append("g");
+
+        groups.append("circle")
+            .attr("cx", scaleX("gold"))
+            .attr("cy", function (_, i) {
+                return scaleY(i);
+            })
+            .attr("class", "gold")
+            .attr("r", 8)
+            .style("fill", "gold")
+            .append("title")
+            .text(function (d) {
+                return d.key + "(" + d.values.gold + ")";
+            });
+
+        groups.append("circle")
+            .attr("cx", scaleX("silver"))
+            .attr("cy", function (_, i) {
+                return scaleY(i);
+            })
+            .attr("class", "silver")
+            .attr("r", 8)
+            .style("fill", "silver")
+            .append("title")
+            .text(function (d) {
+                return d.key + "(" + d.values.silver + ")";
+            });
+
+        groups.append("circle")
+            .attr("cx", scaleX("bronze"))
+            .attr("cy", function (_, i) {
+                return scaleY(i);
+            })
+            .attr("class", "bronze")
+            .attr("r", 8)
+            .style("fill", "orange")
+            .append("title")
+            .text(function (d) {
+                return d.key + "(" + d.values.bronze + ")";
+            });
+
+        d3.selectAll("circle")
+            .on("click", function () {
+                var circle = d3.select(this);
+                var circleClass = circle.attr("class");
+                var count = circle.datum().values[circleClass];
+                circle.transition()
+                    .duration(1000)
+                    .attr("r", count * 8)
+                    .transition()
+                    .delay(1000)
+                    .duration(1000)
+                    .attr("r", 8);
+            });
+
+    });
+})();
+        </script>
+    </body>
+</html>
