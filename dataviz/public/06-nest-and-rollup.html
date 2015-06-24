@@ -73,6 +73,22 @@
             })
             .entries(data))
 
+        // Transform nested result again into a flatten CSV-like list
+        // (I guess typically one does not need to do that)
+        console.log(d3.merge(d3.nest()
+            .key(function (d) { return d.country; })
+            .key(function (d) { return d.sport; })
+            .rollup(function (leaves) { return leaves.length; })
+            .entries(data).map(function (country) {
+                return country.values.map(function (sport) {
+                    return {
+                        country: country.key,
+                        sport: sport.key,
+                        athletes: +sport.values
+                    };
+                });
+            })));
+
     });
 })();
         </script>
