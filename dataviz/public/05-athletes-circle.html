@@ -1,0 +1,141 @@
+<html>
+    <head>
+        <script src="d3.min.js" charset="utf-8"></script>
+    </head><body>
+        <svg></svg>
+        <script>
+// Puts athletes height and weight on the cartesian plan and draws
+// a circle representing athletes age
+(function () {
+    d3.csv("athletes.csv", function (data) {
+        data = (function () {
+            var newData = [];
+            for (var i = 0; i < data.length; ++i) {
+                var di = data[i];
+                if (di.height > 0 && di.weight > 0 && di.age > 0) {
+                    newData.push({
+                        height: +di.height,
+                        weight: +di.weight,
+                        age: +di.age
+                    });
+                }
+            }
+            return newData;
+        })();
+
+        var w = 1200,
+            h = 600,
+
+            svg = d3.select("svg")
+                .attr("width", w)
+                .attr("height", h),
+
+            //
+            // Note: to compute lenght of SVG text there are three methods
+            //
+            //          - getBoundingClientRect()
+            //          - getBBox()
+            //          - getComputedTextLength()
+            //
+            // See also: http://bl.ocks.org/MSCAU/58bba77cdcae42fc2f44
+            //
+
+            xLabel = svg.append("text")
+                .text("Weight")
+                .attr("transform", function () {
+                    return "translate("
+                        + w / 2
+                        + ", "
+                        + this.getBBox().height
+                        + ")";
+                }),
+
+            yLabel = svg.append("text")
+                .text("Height")
+                .attr("transform", function () {
+                    return "translate("
+                        + this.getBBox().height
+                        + ", "
+                        + h / 2
+                        + ") rotate(270)";
+                }),
+
+            plotGroup = svg.append("g")
+                .attr("transform", function () {
+                    return "translate("
+                        + yLabel[0][0].getBoundingClientRect().right
+                        + ", "
+                        + xLabel[0][0].getBoundingClientRect().bottom
+                        + ")";
+                }),
+
+            athletesCircles = plotGroup
+                .selectAll("circle")
+                .data(data)
+                .enter()
+                .append("circle"),
+
+            plotRect = plotGroup[0][0].getBoundingClientRect(),
+            weightExtent = d3.extent(data, function (d) {
+                return d.weight;
+            }),
+            heightExtent = d3.extent(data, function (d) {
+                return d.height;
+            }),
+            scaleX = d3.scale.linear()
+                .domain(weightExtent)
+                .range([plotRect.left, w]),
+            scaleY = d3.scale.linear()
+                .domain([heightExtent[1], heightExtent[0]])
+                .range([plotRect.top, h]),
+            ageExtent = d3.extent(data, function (d) {
+                return d.age;
+            }),
+            scaleColor = d3.scale.quantize()
+                .domain(ageExtent)
+                .range(["green", "yellow", "orange", "red"]),
+
+            xTicks = d3.range(weightExtent[0], weightExtent[1], 10),
+            yTicks = d3.range(heightExtent[0], heightExtent[1], 0.1);
+
+        for (var i = 0; i < xTicks.length; i += 1) {
+            plotGroup.append("line")
+                .attr("x1", scaleX(xTicks[i]))
+                .attr("x2", scaleX(xTicks[i]))
+                .attr("y1", scaleY(heightExtent[0]))
+                .attr("y2", scaleY(heightExtent[1]))
+                .style("stroke-width", 1)
+                .style("stroke-opacity", 0.5)
+                .style("stroke-dasharray", "5, 5")
+                .style("stroke", "black");
+        }
+
+        for (var i = 0; i < yTicks.length; i += 1) {
+            plotGroup.append("line")
+                .attr("y1", scaleY(yTicks[i]))
+                .attr("y2", scaleY(yTicks[i]))
+                .attr("x1", scaleX(weightExtent[0]))
+                .attr("x2", scaleX(weightExtent[1]))
+                .style("stroke-width", 1)
+                .style("stroke-opacity", 0.5)
+                .style("stroke-dasharray", "5, 5")
+                .style("stroke", "black");
+        }
+
+        athletesCircles.attr("cx", function (d) {
+                return scaleX(d.weight);
+            })
+            .attr("cy", function (d) {
+                return scaleY(d.height);
+            })
+            .attr("r", 10)
+            .attr("opacity", 0.1)
+            .attr("fill", function (d) {
+                return scaleColor(d.age);
+            });
+
+    });
+})();
+        </script>
+    </body>
+</html>
