@@ -1,0 +1,71 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        <script src="d3.min.js" charset="utf-8"></script>
+    </head><body>
+        <svg></svg>
+        <script>
+// Histogram of gold medals per country
+(function () {
+    d3.csv("athletes.csv", function (data) {
+
+        var width = 800,
+            leftMargin = 110,
+            rowHeight = 20,
+            topMargin = 10,
+
+            nested = d3.nest()
+                .key(function (d) { return d.country; })
+                .rollup(function (leaves) {
+                    return d3.sum(leaves, function (d) {
+                        return d.gold_medals | 0;
+                    })
+                })
+                .entries(data),
+
+            nonZeroEntries = d3.sum(nested.map(function (d) {
+                return d.values > 0 ? 1 : 0;
+            })),
+
+            height = nonZeroEntries * rowHeight,
+
+            maxGoldMedals = d3.max(nested, function (d) {
+                return d.values;
+            }),
+
+            scaleX = d3.scale.linear()
+                .domain([0, maxGoldMedals])
+                .range([leftMargin, width - leftMargin]),
+
+            scaleY = d3.scale.linear()
+                .domain([0, nonZeroEntries])
+                .range([topMargin, height - topMargin]),
+
+            groups = d3.select("svg")
+                .attr("height", height)
+                .attr("width", width)
+                .selectAll("g")
+                .data(nested)
+                .enter()
+                .append("g")
+                .filter(function (d) { return d.values > 0; });
+
+        groups.append("text")
+            .attr("y", function (_, i) {
+                return scaleY(i) + 10;  // XXX
+            })
+            .text(function (d) { return d.key; });
+
+        groups.append("rect")
+            .attr("height", rowHeight / 2)
+            .attr("width", function (d) {
+                return scaleX(d.values);
+            })
+            .attr("x", leftMargin)
+            .attr("y", function(_, i) { return scaleY(i); });
+
+    });
+})();
+        </script>
+    </body>
+</html>
