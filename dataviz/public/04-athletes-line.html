@@ -1,0 +1,76 @@
+<html>
+    <head>
+        <script src="d3.min.js" charset="utf-8"></script>
+    </head><body>
+        <svg></svg>
+        <script>
+// Correlation between athlete weight and height
+(function () {
+    d3.csv("athletes.csv", function (data) {
+
+        data.forEach(function (d) {
+            d.weight = +d.weight;
+            d.height = +d.height;
+        });
+
+        data = (function () {
+            newData = [];
+            for (var i = 0; i < data.length; ++i) {
+                if (data[i].weight > 0 && data[i].height > 0) {
+                    newData.push(data[i]);
+                }
+            }
+            return newData;
+        })();
+
+        var w = 1200,
+            h = 400
+            minWeight = d3.min(data, function (d) { return d.weight; }),
+            maxWeight = d3.max(data, function (d) { return d.weight; }),
+            minHeight = d3.min(data, function (d) { return d.height; }),
+            maxHeight = d3.max(data, function (d) { return d.height; }),
+            plotUpperLeftX = 30,
+            plotUpperLeftY = 30,
+            scaleWeight = d3.scale.linear()
+                .domain([minWeight, maxWeight])
+                .range([0, w - plotUpperLeftY]),
+            scaleHeight = d3.scale.linear()
+                .domain([minHeight, maxHeight])
+                .range([h - plotUpperLeftX, 0]),
+
+            svg = d3.select("svg")
+                .attr("width", w)
+                .attr("height", h),
+
+            group = svg.append("g")
+                .attr("transform", "translate(" + plotUpperLeftX + ", "
+                    + plotUpperLeftY + ")");
+
+        svg.append("text")
+            .text("Weight")
+            .attr("transform", "translate(" + w / 2
+                + ", " + plotUpperLeftY / 2 + ")");
+
+        svg.append("text")
+            .text("Height")
+            .attr("transform", "translate(" + plotUpperLeftX / 2
+                + ", " + h / 2 + ") rotate(270)");
+
+        group.selectAll("line")
+            .data(data)
+            .enter()
+            .append("line")
+            //.filter(function (d) { return d.weight > 0 && d.height > 0; })
+            .attr("x1", 0)
+            .attr("_height", function (d) { return d.height; })
+            .attr("_weight", function (d) { return d.weight; })
+            .attr("y1", function (d) { return scaleHeight(d.height); })
+            .attr("x2", function (d) { return scaleWeight(d.weight); })
+            .attr("y2", 0)
+            .attr("stroke", "black")
+            .attr("opacity", 0.01);
+    });
+})();
+        </script>
+    </body>
+</html>
