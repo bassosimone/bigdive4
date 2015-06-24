@@ -1,0 +1,47 @@
+<html>
+    <head>
+        <script src="d3.min.js" charset="utf-8"></script>
+    </head><body>
+        <svg></svg>
+        <script>
+
+// Creates random rectangles
+(function () {
+    var width = 1000,
+        height = 250,
+        slack = 2,
+        data = [],
+        duration = 1000,
+        maxLength = 21;
+        dataLength = Math.random() * maxLength;
+
+    for (var i = 0; i < dataLength; ++i) {
+        data.push(i);
+    }
+
+    d3.select("svg")
+        .attr("width", width)
+        .attr("height", height)
+        .selectAll("rect")
+        .data(data)
+        .enter()
+        .append("rect")
+        .attr("width", width / data.length - slack)
+        .attr("height", function (_, i) {
+            return height / data.length * (i + 1);
+        })
+        .attr("x", function (_, i) {
+            return (width / data.length) * i + slack / 2;
+        })
+        .attr("y", function (d) { return height; })
+        .attr("opacity", 1.00)
+        .transition()
+        .duration(duration)
+        .delay(function (_, i) { return i * (duration / data.length); }) 
+        .attr("y", 0)
+        .attr("opacity", function (_, i) { return (i + 1) / data.length; });
+})();
+
+        </script>
+    </body>
+</html>
