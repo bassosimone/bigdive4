@@ -1,0 +1,51 @@
+<html>
+    <head>
+        <script src="d3.min.js" charset="utf-8"></script>
+    </head><body>
+        <svg></svg>
+        <script>
+// Generates histogram of population per country in the world
+(function () {
+    d3.csv("populations.csv", function (data) {
+        var numCountries = data.length,
+            minPopulation = d3.min(data, function (d) {
+                return +d["2012"] + 1; // To avoid passing zero to log()
+            }),
+            maxPopulation = d3.max(data, function (d) {
+                return +d["2012"];
+            }),
+            width = 1024,
+            countryCodeWidth = 45,
+            scalePopulation = d3.scale.log()
+                .domain([minPopulation, maxPopulation])
+                .range([0, width - countryCodeWidth]),
+            groupHeight = 20,
+            barOffsetY = -10,
+            height = numCountries * groupHeight,
+
+            groups = d3.select("svg")
+                .attr("height", height)
+                .attr("width", width)
+                .selectAll("g")
+                .data(data)
+                .enter()
+                .append("g")
+                .attr("transform", function (_, i) {
+                    return "translate(0, " + ((i + 1) * groupHeight) + ")";
+                });
+
+        groups.append("text")
+            .text(function (d) { return d["Country Code"]; });
+
+        groups.append("rect")
+            .attr("height", 10)
+            .attr("width", function (d) {
+                return scalePopulation(+d["2012"] + 1); // Don't pass 0 to log
+            })
+            .attr("y", barOffsetY)
+            .attr("transform", "translate(" + countryCodeWidth + ", 0)");
+    });
+})();
+        </script>
+    </body>
+</html>
