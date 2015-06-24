@@ -1,0 +1,80 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        <script src="d3.min.js" charset="utf-8"></script>
+    </head><body>
+        <svg></svg>
+        <script>
+// Shows usage of nest and rollup
+// See http://bl.ocks.org/phoebebright/raw/3176159/
+(function () {
+    d3.csv("athletes.csv", function (data) {
+        console.log(data);
+
+        // Simple one nest level
+        console.log(d3.nest()
+            .key(function (d) { return d.country; })
+            .entries(data));
+
+        // Simple two nest level
+        console.log(d3.nest()
+            .key(function (d) { return d.country; })
+            .key(function (d) { return d.sport; })
+            .entries(data));
+
+        // Use rollup to count leaves
+        console.log(d3.nest()
+            .key(function (d) { return d.country; })
+            .key(function (d) { return d.sport; })
+            .rollup(function (leaves) { return leaves.length; })
+            .entries(data));
+
+        // Rollup does sums as well
+        console.log(d3.nest()
+            .key(function (d) { return d.country; })
+            .key(function (d) { return d.sport; })
+            .rollup(function (leaves) {
+                return {
+                    numAthletes: leaves.length,
+                    bronzeMedals: d3.sum(leaves, function (d) {
+                        return d.bronze_medals;
+                    })
+                };
+            })
+            .entries(data));
+
+        // Rollup everything to get a grand total of number of lines
+        // (I guess it's easier to do data.length, however)
+        console.log(d3.nest()
+            .rollup(function (leaves) {
+                return leaves.length;
+            })
+            .entries(data));
+
+        // Sorting
+        console.log(d3.nest()
+            .key(function (d) { return d.country; })
+                .sortKeys(d3.ascending)
+            .entries(data));
+
+        // Sorting - custom order
+        console.log(d3.nest()
+            .key(function (d) { return d.country; })
+                .sortKeys(function (a, b) {
+                    return a < b;
+                })
+            .entries(data));
+
+        // Sorting - sort the leaves as well
+        console.log(d3.nest()
+            .key(function (d) { return d.country; })
+            .sortValues(function (a, b) {
+                return a.age < b.age;
+            })
+            .entries(data))
+
+    });
+})();
+        </script>
+    </body>
+</html>
