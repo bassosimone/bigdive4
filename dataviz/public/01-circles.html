@@ -1,0 +1,45 @@
+<html>
+    <head>
+        <script src="d3.min.js" charset="utf-8"></script>
+    </head><body>
+        <svg></svg>
+        <script>
+// Creates random circles
+(function () {
+    var width = 300,
+        height = 300,
+        numCircles = Math.random() * 6;
+        circles = [],
+        duration = 5000;
+
+    for (var i = 0; i < numCircles; ++i) {
+        circles.push({
+            "cx": Math.random() * width,
+            "cy": Math.random() * height,
+            "r": Math.random() * (width / 4),
+            "opacity": Math.random() * 0.33 + 0.33
+        });
+    }
+
+    d3.select("svg")
+        .attr("width", width)
+        .attr("height", height)
+        .selectAll("circle")
+        .data(circles)
+        .enter()
+        .append("circle")
+        .attr("r", width / numCircles)
+        .attr("cy", height / 2)
+        .attr("cx", width / 2)
+        .attr("opacity", function (d) { return d.opacity; })
+        .transition()
+        .ease("bounce")
+        .duration(duration)
+        .delay(function (_, i) { return duration * i / numCircles; })
+        .attr("r", function (d) { return d.r; })
+        .attr("cx", function (d) { return d.cx; })
+        .attr("cy", function (d) { return d.cy; });
+})();
+        </script>
+    </body>
+</html>
